@@ -1,0 +1,36 @@
+application:
+  name: pv-3070-nicehash
+  version: "1.0.0"
+  log_level: INFO
+  poll_interval_seconds: 10
+  dry_run: true
+
+pv:
+  shelly_ip: "192.168.1.50"
+  reserve_watts: 40
+  start_threshold_watts: 180
+  stop_threshold_watts: 110
+  min_start_seconds: 180
+  min_stop_seconds: 300
+  invert_power_sign: false
+  request_timeout_seconds: 5
+
+gpu:
+  index: 0
+  min_power_watts: 100
+  max_power_watts: 180
+  safe_power_watts: 100
+  power_step_watts: 10
+  temperature_warning_c: 75
+  temperature_critical_c: 80
+  error_limit: 3
+
+nicehash:
+  executable: "C:\\NiceHashMiner\\NiceHashMiner.exe"
+  working_directory: "C:\\NiceHashMiner"
+  process_name: "NiceHashMiner.exe"
+  startup_timeout_seconds: 30
+  stop_timeout_seconds: 20
+
+logging:
+  file: "logs/pv-3070-nicehash.log"
