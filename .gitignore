@@ -1,0 +1,10 @@
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+logs/
+.env
+config.local.yaml
+.idea/
+.vscode/
+Thumbs.db
