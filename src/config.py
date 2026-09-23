@@ -1,7 +1,26 @@
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
+import os
 import yaml
+
+
+def load_dotenv(path: str = ".env") -> None:
+    """Minimal .env loader (no extra dependency). Existing environment
+    variables always take precedence over the file. Silently does nothing
+    if the file does not exist."""
+    p = Path(path)
+    if not p.exists():
+        return
+    for line in p.read_text(encoding="utf-8").splitlines():
+        line = line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        key, _, value = line.partition("=")
+        key = key.strip()
+        value = value.strip().strip('"').strip("'")
+        if key and key not in os.environ:
+            os.environ[key] = value
 
 @dataclass
 class Settings:
@@ -19,6 +38,7 @@ class Settings:
     def logging(self): return self.data["logging"]
 
 def load_settings(path: str = "config.yaml") -> Settings:
+    load_dotenv()
     p = Path(path)
     if not p.exists():
         raise FileNotFoundError(f"Configuration not found: {p.resolve()}")
