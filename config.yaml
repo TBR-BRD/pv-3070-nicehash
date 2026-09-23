@@ -39,3 +39,8 @@ dashboard:
   enabled: true
   host: "127.0.0.1"
   port: 8090
+
+nicehash_cloud:
+  enabled: false
+  worker_name: "windows10pc"
+  poll_interval_seconds: 60

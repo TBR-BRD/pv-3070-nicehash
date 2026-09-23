@@ -193,6 +193,10 @@ _HTML = r"""<!doctype html>
     <div class="row"><span>Prozess</span><span class="v" id="nh-status">-</span></div>
     <div class="row"><span>Modus</span><span class="v" id="dry-run">-</span></div>
     <div class="row"><span>Fehlerz&auml;hler</span><span class="v" id="errors">-</span></div>
+    <div class="row"><span>Cloud-Status</span><span class="v" id="nh-cloud-status">-</span></div>
+    <div class="row"><span>Hashrate</span><span class="v" id="nh-hashrate">-</span></div>
+    <div class="row"><span>Profitabilit&auml;t</span><span class="v" id="nh-profit">-</span></div>
+    <div class="row"><span>Unbezahlt</span><span class="v" id="nh-unpaid">-</span></div>
   </section>
 
   <section class="panel">
@@ -299,6 +303,21 @@ async function refresh() {
       : '<span class="dot grey"></span>gestoppt');
   document.getElementById("dry-run").textContent = app.dry_run ? "Testlauf (dry_run)" : "Live";
   document.getElementById("errors").textContent = st.errors;
+
+  const nc = st.nicehash_cloud;
+  document.getElementById("nh-cloud-status").textContent = nc
+    ? nc.miner_status + (nc.gpu_name ? " (" + nc.gpu_name + ")" : "")
+    : "-";
+  document.getElementById("nh-hashrate").textContent =
+    (nc && nc.speed && nc.speed.value !== null && nc.speed.value !== undefined)
+      ? nc.speed.value.toFixed(1) + " " + (nc.speed.algorithm || "")
+      : "-";
+  document.getElementById("nh-profit").textContent =
+    (nc && nc.profitability_btc_day !== null && nc.profitability_btc_day !== undefined)
+      ? nc.profitability_btc_day.toFixed(8) + " BTC/Tag" : "-";
+  document.getElementById("nh-unpaid").textContent =
+    (nc && nc.unpaid_amount_btc !== null && nc.unpaid_amount_btc !== undefined)
+      ? nc.unpaid_amount_btc.toFixed(8) + " BTC" : "-";
 
   document.getElementById("cfg-start").textContent =
     Math.round(cfg.start_threshold_watts) + " W (" + cfg.min_start_seconds + " s)";

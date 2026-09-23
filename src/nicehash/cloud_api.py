@@ -64,6 +64,77 @@ class NiceHashCloudClient:
         return response.json()
 
     def get_rigs(self) -> dict:
-        """Raw response of GET /main/api/v2/mining/rigs2 - shape not finalized yet,
-        see scripts/test_nicehash_cloud.py to inspect a real response first."""
         return self.request("GET", "/main/api/v2/mining/rigs2")
+
+
+def _odv_value(odv_list, key: str, unit: str | None = None):
+    """NiceHash reports per-device/-rig values as a flat list of
+    {"key": ..., "unit": ..., "value": ...} dicts (the "odv" arrays), and the
+    same key can appear more than once with different units (e.g. "Power
+    Limit" in both "%" and "W") - so a lookup dict would silently pick the
+    wrong one. This walks the list and matches on key (+ unit if given)."""
+    for item in odv_list or []:
+        if item.get("key") == key and (unit is None or item.get("unit") == unit):
+            return item.get("value")
+    return None
+
+
+def _to_float(value):
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return None
+
+
+def summarize_managed_rig(rigs_response: dict, worker_name: str | None = None) -> dict | None:
+    """Find the NHM-managed ("v4") rig - optionally the one matching
+    worker_name - and return a flat summary for the dashboard. Returns None
+    if no matching managed rig is present in the response.
+
+    Confirmed against a real account response (2026-09-23); GPU device is
+    matched by deviceClass "2" (falls back to name containing nvidia/rtx/
+    geforce for older accounts where that might differ).
+    """
+    for rig in rigs_response.get("miningRigs", []):
+        v4 = rig.get("v4")
+        if not v4:
+            continue
+        rig_worker = (v4.get("mmv") or {}).get("workerName")
+        if worker_name and rig_worker != worker_name:
+            continue
+
+        rig_odv = v4.get("odv") or []
+        gpu_device = None
+        for device in v4.get("devices", []):
+            dsv = device.get("dsv", {})
+            name = (dsv.get("name") or "").lower()
+            if dsv.get("deviceClass") == "2" or any(s in name for s in ("nvidia", "geforce", "rtx")):
+                gpu_device = device
+                break
+        gpu_odv = (gpu_device or {}).get("odv") or []
+
+        speed = None
+        if gpu_device:
+            algo_speeds = (gpu_device.get("mdv") or {}).get("algorithmsSpeed") or []
+            if algo_speeds:
+                # Not yet confirmed against a live (actively mining) response -
+                # best-effort extraction, safe to leave None if shape differs.
+                first = algo_speeds[0]
+                speed = {"algorithm": first.get("algorithm") or first.get("title"),
+                         "value": _to_float(first.get("speed"))}
+
+        return {
+            "worker_name": rig_worker,
+            "gpu_name": (gpu_device or {}).get("dsv", {}).get("name"),
+            "miner_status": rig.get("minerStatus"),
+            "active_miner": _odv_value(gpu_odv, "Miner") or None,
+            "uptime_s": _to_float(_odv_value(rig_odv, "Uptime", "s")),
+            "unpaid_amount_btc": _to_float(rig.get("unpaidAmount")),
+            "profitability_btc_day": rig.get("profitability"),
+            "gpu_temperature_c": _to_float(_odv_value(gpu_odv, "Temperature", "°C")),
+            "gpu_load_pct": _to_float(_odv_value(gpu_odv, "Load", "%")),
+            "gpu_power_w": _to_float(_odv_value(gpu_odv, "Power usage", "W")),
+            "gpu_power_limit_w": _to_float(_odv_value(gpu_odv, "Power Limit", "W")),
+            "speed": speed,
+        }
+    return None
