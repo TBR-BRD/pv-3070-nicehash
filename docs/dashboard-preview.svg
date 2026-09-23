@@ -1,0 +1,113 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1000" viewBox="0 0 1600 1000">
+<defs>
+ <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#03121c"/><stop offset="1" stop-color="#020b12"/></linearGradient>
+ <style>
+  .t{font-family:Arial,Helvetica,sans-serif;fill:#d7e7f5}.muted{fill:#8da7bb}.green{fill:#43e27b}.blue{fill:#35a9ff}.orange{fill:#ffad42}.purple{fill:#a66cff}.line{stroke:#16415a;stroke-width:1}.panel{fill:#061824;stroke:#17425a;stroke-width:2}.h{font-size:22px;font-weight:700}.v{font-size:20px;font-weight:700}.s{font-size:16px}
+ </style>
+</defs>
+<rect width="1600" height="1000" fill="url(#bg)"/>
+<rect x="0" y="0" width="1600" height="64" fill="#041723" stroke="#0c3850"/>
+<text x="28" y="40" class="t" font-size="24" font-weight="700">🍃  pv-3070-nicehash v1.1.0</text>
+<text x="1060" y="39" class="muted s">So, 27.04.2025 14:32:17</text><text x="1320" y="39" class="muted s">Laufzeit: 2d 4h 17m</text>
+<circle cx="1530" cy="32" r="7" fill="#43e27b"/><text x="1545" y="38" class="green s">Online</text>
+
+<g transform="translate(18,82)">
+ <rect width="365" height="255" rx="7" class="panel"/><text x="18" y="32" class="t h">☀ PV &amp; Hausverbrauch</text>
+ <text x="18" y="72" class="muted s">PV-Erzeugung</text><text x="335" y="72" text-anchor="end" class="v">1.842 W</text>
+ <text x="18" y="108" class="muted s">Hausverbrauch</text><text x="335" y="108" text-anchor="end" class="v">612 W</text>
+ <line x1="18" y1="122" x2="347" y2="122" class="line"/><text x="18" y="153" class="green s">⚡ PV-Überschuss</text><text x="335" y="153" text-anchor="end" class="green v">1.230 W</text>
+ <line x1="18" y1="170" x2="347" y2="170" class="line"/><text x="18" y="202" class="muted s">Reserve (40 W)</text><text x="335" y="202" text-anchor="end" class="v">40 W</text>
+ <text x="18" y="236" class="blue s">Mining-Budget</text><text x="335" y="236" text-anchor="end" class="blue v">1.190 W</text>
+</g>
+
+<g transform="translate(400,82)">
+ <rect width="365" height="255" rx="7" class="panel"/><text x="18" y="32" class="t h">▣ GPU (RTX 3070)</text>
+ <text x="18" y="72" class="muted s">Status</text><circle cx="250" cy="66" r="6" fill="#43e27b"/><text x="265" y="73" class="green v">MINING</text>
+ <text x="18" y="108" class="muted s">Power Limit</text><text x="335" y="108" text-anchor="end" class="v">140 W</text>
+ <text x="18" y="144" class="muted s">Aktuelle Leistung</text><text x="335" y="144" text-anchor="end" class="v">138 W</text>
+ <text x="18" y="180" class="muted s">Temperatur</text><text x="335" y="180" text-anchor="end" class="v">58 °C</text>
+ <text x="18" y="216" class="muted s">GPU Auslastung</text><text x="335" y="216" text-anchor="end" class="v">99 %</text>
+ <text x="18" y="246" class="muted s">Lüfter</text><text x="335" y="246" text-anchor="end" class="v">72 %</text>
+</g>
+
+<g transform="translate(782,82)">
+ <rect width="365" height="255" rx="7" class="panel"/><text x="18" y="32" class="t h">◉ NiceHash</text>
+ <text x="18" y="72" class="muted s">Status</text><circle cx="250" cy="66" r="6" fill="#43e27b"/><text x="265" y="73" class="green v">CONNECTED</text>
+ <text x="18" y="108" class="muted s">Algorithmus</text><text x="335" y="108" text-anchor="end" class="v">Autolykos2</text>
+ <text x="18" y="144" class="muted s">Hashrate</text><text x="335" y="144" text-anchor="end" class="v">162.4 MH/s</text>
+ <text x="18" y="180" class="muted s">Profitabilität</text><text x="335" y="180" text-anchor="end" class="v">0.000198 BTC/Tag</text>
+ <text x="335" y="208" text-anchor="end" class="muted s">≈ 6,42 € / Tag</text>
+ <text x="18" y="244" class="muted s">Uptime</text><text x="335" y="244" text-anchor="end" class="v">2d 4h 16m</text>
+</g>
+
+<g transform="translate(1164,82)">
+ <rect width="418" height="255" rx="7" class="panel"/><text x="18" y="32" class="t h">⚙ PV-Steuerung</text>
+ <text x="18" y="72" class="muted s">Modus</text><text x="390" y="72" text-anchor="end" class="v">Automatisch</text>
+ <text x="18" y="108" class="muted s">Start-Schwelle</text><text x="390" y="108" text-anchor="end" class="v">180 W (3 min)</text>
+ <text x="18" y="144" class="muted s">Stop-Schwelle</text><text x="390" y="144" text-anchor="end" class="v">110 W (5 min)</text>
+ <text x="18" y="180" class="muted s">Aktueller PV-Überschuss</text><text x="390" y="180" text-anchor="end" class="v">1.230 W</text>
+ <text x="18" y="216" class="muted s">GPU-Leistung (Ziel)</text><text x="390" y="216" text-anchor="end" class="v">140 W</text>
+ <text x="18" y="246" class="muted s">Reserve</text><text x="390" y="246" text-anchor="end" class="v">40 W</text>
+</g>
+
+<g transform="translate(18,357)">
+ <rect width="384" height="315" rx="7" class="panel"/><text x="18" y="32" class="t h">☀ PV-Überschuss (W)</text>
+ <line x1="55" y1="75" x2="55" y2="250" stroke="#2a4c61"/><line x1="55" y1="250" x2="360" y2="250" stroke="#2a4c61"/>
+ <polyline fill="none" stroke="#43e27b" stroke-width="4" points="55,220 75,205 95,190 115,175 135,155 155,180 175,120 195,135 215,85 235,105 255,75 275,130 295,115 315,170 335,205 355,225"/>
+ <line x1="55" y1="220" x2="360" y2="220" stroke="#ffad42" stroke-dasharray="7,5"/><line x1="55" y1="238" x2="360" y2="238" stroke="#ff4d33" stroke-dasharray="7,5"/>
+ <text x="20" y="285" class="green s">● PV-Überschuss</text><text x="170" y="285" class="orange s">--- Start 180 W</text><text x="20" y="305" class="s" fill="#ff4d33">--- Stop 110 W</text>
+</g>
+
+<g transform="translate(418,357)">
+ <rect width="350" height="315" rx="7" class="panel"/><text x="18" y="32" class="t h">▣ GPU-Leistung (W)</text>
+ <line x1="55" y1="75" x2="55" y2="250" stroke="#2a4c61"/><line x1="55" y1="250" x2="325" y2="250" stroke="#2a4c61"/>
+ <polyline fill="none" stroke="#35a9ff" stroke-width="4" points="55,155 90,155 110,125 145,125 170,155 205,125 240,135 270,150 300,170 325,220"/>
+ <line x1="55" y1="125" x2="325" y2="125" stroke="#35a9ff" stroke-dasharray="7,5"/>
+ <text x="20" y="285" class="blue s">● GPU-Leistung</text><text x="180" y="285" class="blue s">--- Power Limit</text>
+</g>
+
+<g transform="translate(784,357)">
+ <rect width="365" height="315" rx="7" class="panel"/><text x="18" y="32" class="t h">◔ Temperatur (°C)</text>
+ <line x1="55" y1="75" x2="55" y2="250" stroke="#2a4c61"/><line x1="55" y1="250" x2="340" y2="250" stroke="#2a4c61"/>
+ <polyline fill="none" stroke="#ffad42" stroke-width="4" points="55,175 90,170 125,160 160,150 195,155 230,135 265,150 300,145 340,145"/>
+ <line x1="55" y1="105" x2="340" y2="105" stroke="#ff4d33" stroke-dasharray="7,5"/>
+ <text x="20" y="285" class="orange s">● GPU-Temp</text><text x="170" y="285" class="s" fill="#ff4d33">--- Grenze (75 °C)</text>
+</g>
+
+<g transform="translate(1165,357)">
+ <rect width="417" height="315" rx="7" class="panel"/><text x="18" y="32" class="t h">₿ BTC-Ertrag</text>
+ <line x1="55" y1="75" x2="55" y2="250" stroke="#2a4c61"/><line x1="55" y1="250" x2="390" y2="250" stroke="#2a4c61"/>
+ <g fill="#a66cff"><rect x="75" y="210" width="30" height="40"/><rect x="125" y="190" width="30" height="60"/><rect x="175" y="180" width="30" height="70"/><rect x="225" y="160" width="30" height="90"/><rect x="275" y="135" width="30" height="115"/><rect x="325" y="90" width="30" height="160"/></g>
+ <text x="20" y="285" class="purple s">● Tagesertrag (BTC)</text>
+</g>
+
+<g transform="translate(18,692)">
+ <rect width="384" height="250" rx="7" class="panel"/><text x="18" y="32" class="t h">⚙ System-Status</text>
+ <text x="20" y="70" class="green s">● Shelly Pro 3EM</text><text x="340" y="70" text-anchor="end" class="s">OK (192.168.1.50)</text>
+ <text x="20" y="108" class="green s">● NVIDIA (nvidia-smi)</text><text x="340" y="108" text-anchor="end" class="s">OK</text>
+ <text x="20" y="146" class="green s">● NiceHash Miner</text><text x="340" y="146" text-anchor="end" class="s">OK</text>
+ <text x="20" y="184" class="green s">● Windows Service</text><text x="340" y="184" text-anchor="end" class="s">OK</text>
+ <text x="20" y="222" class="green s">● Internet Verbindung</text><text x="340" y="222" text-anchor="end" class="s">OK</text>
+</g>
+
+<g transform="translate(418,692)">
+ <rect width="350" height="250" rx="7" class="panel"/><text x="18" y="32" class="t h">▤ Aktuelle Konfiguration</text>
+ <text x="18" y="70" class="muted s">PV Start-Schwelle</text><text x="330" y="70" text-anchor="end" class="v">180 W (3 min)</text>
+ <text x="18" y="102" class="muted s">PV Stop-Schwelle</text><text x="330" y="102" text-anchor="end" class="v">110 W (5 min)</text>
+ <text x="18" y="134" class="muted s">GPU Power Range</text><text x="330" y="134" text-anchor="end" class="v">100–180 W</text>
+ <text x="18" y="166" class="muted s">Reserve</text><text x="330" y="166" text-anchor="end" class="v">40 W</text>
+ <text x="18" y="198" class="muted s">Min. Laufzeit</text><text x="330" y="198" text-anchor="end" class="v">180 s</text>
+ <text x="18" y="230" class="muted s">Min. Stopp-Zeit</text><text x="330" y="230" text-anchor="end" class="v">300 s</text>
+</g>
+
+<g transform="translate(784,692)">
+ <rect width="798" height="250" rx="7" class="panel"/><text x="18" y="32" class="t h">◷ Letzte Ereignisse</text>
+ <text x="20" y="70" class="green s">● 14:31</text><text x="100" y="70" class="t s">GPU Power Limit auf 140 W gesetzt</text>
+ <text x="20" y="100" class="green s">● 14:28</text><text x="100" y="100" class="t s">NiceHash: Algorithmuswechsel (Autolykos2)</text>
+ <text x="20" y="130" class="green s">● 14:25</text><text x="100" y="130" class="t s">PV-Überschuss: 1.230 W (über Schwelle)</text>
+ <text x="20" y="160" class="green s">● 14:22</text><text x="100" y="160" class="t s">Status: Mining (Hashrate 162.4 MH/s)</text>
+ <text x="20" y="190" class="green s">● 14:18</text><text x="100" y="190" class="t s">GPU Temperatur: 58 °C</text>
+ <text x="20" y="220" class="green s">● 14:15</text><text x="100" y="220" class="t s">PV-Überschuss: 1.087 W</text>
+</g>
+<rect x="0" y="958" width="1600" height="42" fill="#041723"/><circle cx="30" cy="979" r="7" fill="#43e27b"/><text x="48" y="985" class="green s">Alles läuft – PV-Überschuss wird optimal genutzt!</text>
+</svg>
