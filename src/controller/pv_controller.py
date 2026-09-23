@@ -41,28 +41,40 @@ class PVController:
 
     def tick(self, dry_run: bool = False):
         now = time.monotonic()
+
+        # Read both inputs independently so a failure in one (e.g. Shelly
+        # unreachable) doesn't hide the real status of the other (e.g. GPU) -
+        # both are reported to the dashboard regardless of which one failed.
+        surplus = gpu = None
+        shelly_ok = nvidia_ok = True
+        surplus_exc = gpu_exc = None
         try:
             surplus = self.pv.read_power_watts()
         except Exception as exc:
-            self.errors += 1
-            self.log.error("Input error (%d): %s", self.errors, exc)
-            if self.dashboard:
-                self.dashboard.update(errors=self.errors, system={"shelly_ok": False})
-            if self.errors >= int(self.cfg["error_limit"]):
-                self.state = self.FAULT
-                self._event("FAULT: Eingabefehler-Limit erreicht (Shelly nicht erreichbar)")
-                if not dry_run: self._safe_stop()
-            return
+            shelly_ok = False
+            surplus_exc = exc
         try:
             gpu = self.gpu.status()
         except Exception as exc:
+            nvidia_ok = False
+            gpu_exc = exc
+
+        if not shelly_ok or not nvidia_ok:
             self.errors += 1
-            self.log.error("Input error (%d): %s", self.errors, exc)
+            if surplus_exc is not None:
+                self.log.error("Input error (%d): %s", self.errors, surplus_exc)
+            if gpu_exc is not None:
+                self.log.error("Input error (%d): %s", self.errors, gpu_exc)
             if self.dashboard:
-                self.dashboard.update(errors=self.errors, system={"shelly_ok": True, "nvidia_ok": False})
+                update = {"errors": self.errors, "system": {"shelly_ok": shelly_ok, "nvidia_ok": nvidia_ok}}
+                if gpu is not None: update["gpu"] = gpu
+                self.dashboard.update(**update)
             if self.errors >= int(self.cfg["error_limit"]):
                 self.state = self.FAULT
-                self._event("FAULT: Eingabefehler-Limit erreicht (nvidia-smi nicht erreichbar)")
+                reasons = []
+                if not shelly_ok: reasons.append("Shelly nicht erreichbar")
+                if not nvidia_ok: reasons.append("nvidia-smi nicht erreichbar")
+                self._event("FAULT: Eingabefehler-Limit erreicht (%s)" % ", ".join(reasons))
                 if not dry_run: self._safe_stop()
             return
         self.errors = 0
