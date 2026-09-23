@@ -52,6 +52,20 @@ pip install -r requirements.txt
 python -m src.main
 ```
 
+## Web dashboard
+
+The controller can serve a live status dashboard while it runs (no extra dependencies, built on Python's standard library).
+
+Enable it in `config.yaml`:
+```yaml
+dashboard:
+  enabled: true
+  host: "127.0.0.1"   # use "0.0.0.0" to reach it from other devices on the network
+  port: 8090
+```
+
+Then open `http://127.0.0.1:8090/` (or `http://<pc-ip>:8090/` from another device on the network, once bound to `0.0.0.0` and the Windows Firewall allows the port). It shows PV surplus, GPU power/temperature/utilization, controller state, the NiceHash Miner process status, the active thresholds and a rolling event log - updated every 5 seconds via `/api/status`. It only ever shows values the controller itself measures; there is no separate NiceHash-account/hashrate data source wired in.
+
 ## Windows Scheduled Task
 
 Run `scripts\install_task.ps1` from an elevated PowerShell after testing interactively. The task starts the controller at boot.

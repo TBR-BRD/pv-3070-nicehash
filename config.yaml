@@ -34,3 +34,8 @@ nicehash:
 
 logging:
   file: "logs/pv-3070-nicehash.log"
+
+dashboard:
+  enabled: true
+  host: "127.0.0.1"
+  port: 8090

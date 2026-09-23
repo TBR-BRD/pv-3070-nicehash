@@ -8,8 +8,9 @@ class PVController:
     STOPPING = "STOPPING"
     FAULT = "FAULT"
 
-    def __init__(self, pv, gpu, nicehash, cfg, logger):
+    def __init__(self, pv, gpu, nicehash, cfg, logger, dashboard=None):
         self.pv, self.gpu, self.nicehash, self.cfg, self.log = pv, gpu, nicehash, cfg, logger
+        self.dashboard = dashboard
         self.state = self.OFF
         self.above_since = None
         self.below_since = None
@@ -21,11 +22,20 @@ class PVController:
         step = int(self.cfg["power_step_watts"])
         return int(p // step * step)
 
+    def _event(self, message: str):
+        if self.dashboard: self.dashboard.event(message)
+
     def _safe_stop(self):
-        try: self.gpu.set_power_limit(int(self.cfg["safe_power_watts"]))
-        except Exception as exc: self.log.error("Could not set safe GPU power: %s", exc)
-        try: self.nicehash.stop()
-        except Exception as exc: self.log.error("Could not stop NiceHash: %s", exc)
+        try:
+            self.gpu.set_power_limit(int(self.cfg["safe_power_watts"]))
+        except Exception as exc:
+            self.log.error("Could not set safe GPU power: %s", exc)
+        try:
+            self.nicehash.stop()
+            if self.dashboard: self.dashboard.update(system={"nicehash_ok": True})
+        except Exception as exc:
+            self.log.error("Could not stop NiceHash: %s", exc)
+            if self.dashboard: self.dashboard.update(system={"nicehash_ok": False})
         self.state = self.OFF
         self.above_since = self.below_since = None
 
@@ -33,18 +43,44 @@ class PVController:
         now = time.monotonic()
         try:
             surplus = self.pv.read_power_watts()
-            gpu = self.gpu.status()
-            self.errors = 0
         except Exception as exc:
             self.errors += 1
             self.log.error("Input error (%d): %s", self.errors, exc)
+            if self.dashboard:
+                self.dashboard.update(errors=self.errors, system={"shelly_ok": False})
             if self.errors >= int(self.cfg["error_limit"]):
                 self.state = self.FAULT
+                self._event("FAULT: Eingabefehler-Limit erreicht (Shelly nicht erreichbar)")
                 if not dry_run: self._safe_stop()
             return
+        try:
+            gpu = self.gpu.status()
+        except Exception as exc:
+            self.errors += 1
+            self.log.error("Input error (%d): %s", self.errors, exc)
+            if self.dashboard:
+                self.dashboard.update(errors=self.errors, system={"shelly_ok": True, "nvidia_ok": False})
+            if self.errors >= int(self.cfg["error_limit"]):
+                self.state = self.FAULT
+                self._event("FAULT: Eingabefehler-Limit erreicht (nvidia-smi nicht erreichbar)")
+                if not dry_run: self._safe_stop()
+            return
+        self.errors = 0
+
+        if self.dashboard:
+            nh_running = None
+            try:
+                nh_running = self.nicehash.is_running()
+            except Exception:
+                pass
+            self.dashboard.update(
+                surplus_w=surplus, gpu=gpu, nicehash_running=nh_running, errors=0,
+                system={"shelly_ok": True, "nvidia_ok": True},
+            )
 
         if gpu["temperature_c"] >= float(self.cfg["temperature_critical_c"]):
             self.log.error("Critical GPU temperature: %.1f C", gpu["temperature_c"])
+            self._event("Kritische GPU-Temperatur: %.1f °C – Notstopp" % gpu["temperature_c"])
             if not dry_run: self._safe_stop()
             return
         if gpu["temperature_c"] >= float(self.cfg["temperature_warning_c"]):
@@ -59,10 +95,12 @@ class PVController:
                 if now - self.above_since >= float(self.cfg["min_start_seconds"]):
                     target = self.target_power(surplus)
                     self.log.info("Starting NiceHash, surplus=%.1f W target=%d W", surplus, target)
+                    self._event("Start: Überschuss %.0f W, Ziel %d W" % (surplus, target))
                     if not dry_run:
                         self.gpu.set_power_limit(target)
                         if not self.nicehash.start(): raise RuntimeError("NiceHash did not start")
                     self.state = self.MINING
+                    if self.dashboard: self.dashboard.update(controller_state=self.state, target_power_w=target)
                     self.above_since = None
             else:
                 self.above_since = None
@@ -73,12 +111,15 @@ class PVController:
                 self.below_since = self.below_since or now
                 if now - self.below_since >= float(self.cfg["min_stop_seconds"]):
                     self.log.info("Stopping NiceHash, surplus=%.1f W", surplus)
+                    self._event("Stopp: Überschuss %.0f W unter Schwelle" % surplus)
                     if not dry_run: self._safe_stop()
                     else: self.state = self.OFF
+                    if self.dashboard: self.dashboard.update(controller_state=self.state, target_power_w=None)
                     self.below_since = None
             else:
                 self.below_since = None
                 target = self.target_power(surplus)
                 if not dry_run:
                     self.gpu.set_power_limit(target)
+                if self.dashboard: self.dashboard.update(controller_state=self.state, target_power_w=target)
                 self.log.info("MINING surplus=%.1f W GPU=%.1f W target=%d W temp=%.1f C", surplus, gpu["power_w"], target, gpu["temperature_c"])
