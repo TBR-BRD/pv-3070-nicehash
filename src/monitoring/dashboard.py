@@ -313,8 +313,8 @@ async function refresh() {
     ? nc.miner_status + (nc.gpu_name ? " (" + nc.gpu_name + ")" : "")
     : "-";
   document.getElementById("nh-hashrate").textContent =
-    (nc && nc.speed && nc.speed.value !== null && nc.speed.value !== undefined)
-      ? nc.speed.value.toFixed(1) + " " + (nc.speed.algorithm || "")
+    (nc && nc.speed && nc.speed.value_mhs !== null && nc.speed.value_mhs !== undefined)
+      ? nc.speed.value_mhs.toFixed(1) + " MH/s"
       : "-";
   document.getElementById("nh-profit").textContent =
     (nc && nc.profitability_btc_day !== null && nc.profitability_btc_day !== undefined)

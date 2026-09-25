@@ -117,11 +117,17 @@ def summarize_managed_rig(rigs_response: dict, worker_name: str | None = None) -
         if gpu_device:
             algo_speeds = (gpu_device.get("mdv") or {}).get("algorithmsSpeed") or []
             if algo_speeds:
-                # Not yet confirmed against a live (actively mining) response -
-                # best-effort extraction, safe to leave None if shape differs.
+                # Confirmed against a live mining response (2026-09-25): value
+                # is raw H/s, "algorithm" is NiceHash's internal numeric
+                # algorithm ID (e.g. "57"), not a human-readable name - so it
+                # is kept but not shown as if it were one.
                 first = algo_speeds[0]
-                speed = {"algorithm": first.get("algorithm") or first.get("title"),
-                         "value": _to_float(first.get("speed"))}
+                value_hs = _to_float(first.get("speed"))
+                speed = {
+                    "algorithm_id": first.get("algorithm"),
+                    "value_hs": value_hs,
+                    "value_mhs": (value_hs / 1_000_000) if value_hs is not None else None,
+                }
 
         return {
             "worker_name": rig_worker,
