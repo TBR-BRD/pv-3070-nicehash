@@ -178,6 +178,7 @@ _HTML = r"""<!doctype html>
     <div class="row"><span>&Uuml;berschuss</span><span class="v green" id="surplus">-</span></div>
     <div class="row"><span>Reserve</span><span class="v" id="reserve">-</span></div>
     <div class="row"><span>GPU-Ziel (Power Limit)</span><span class="v blue" id="target">-</span></div>
+    <div class="row"><span>Steckdose PC (gemessen)</span><span class="v" id="pc-power">-</span></div>
   </section>
 
   <section class="panel">
@@ -223,6 +224,7 @@ _HTML = r"""<!doctype html>
     <div class="row"><span>Shelly Pro 3EM</span><span class="v" id="sys-shelly">-</span></div>
     <div class="row"><span>NVIDIA (nvidia-smi)</span><span class="v" id="sys-nvidia">-</span></div>
     <div class="row"><span>NiceHash Miner</span><span class="v" id="sys-nicehash">-</span></div>
+    <div class="row"><span>Shelly Plug (PC-Steckdose)</span><span class="v" id="sys-pc-power">-</span></div>
   </section>
 
   <section class="panel span2">
@@ -290,6 +292,8 @@ async function refresh() {
   document.getElementById("surplus").textContent = fmtW(st.surplus_w);
   document.getElementById("reserve").textContent = fmtW(cfg.reserve_watts);
   document.getElementById("target").textContent = fmtW(st.target_power_w);
+  document.getElementById("pc-power").textContent =
+    st.pc_power ? (fmtW(st.pc_power.power_w) + (st.pc_power.on === false ? " (aus)" : "")) : "-";
 
   document.getElementById("ctrl-state").textContent = st.controller_state;
   document.getElementById("gpu-power").textContent =
@@ -329,6 +333,7 @@ async function refresh() {
   document.getElementById("sys-shelly").innerHTML = statusBadge(st.system.shelly_ok);
   document.getElementById("sys-nvidia").innerHTML = statusBadge(st.system.nvidia_ok);
   document.getElementById("sys-nicehash").innerHTML = statusBadge(st.system.nicehash_ok);
+  document.getElementById("sys-pc-power").innerHTML = statusBadge(st.system.pc_power_ok);
 
   document.getElementById("events").innerHTML = data.events.map(e =>
     "<li><span class=\"muted\">" + new Date(e.ts * 1000).toLocaleTimeString("de-DE") + "</span> " + e.msg + "</li>"

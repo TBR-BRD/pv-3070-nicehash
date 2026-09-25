@@ -44,3 +44,8 @@ nicehash_cloud:
   enabled: false
   worker_name: "windows10pc"
   poll_interval_seconds: 60
+
+pc_power_meter:
+  enabled: false
+  shelly_ip: "192.168.178.180"
+  poll_interval_seconds: 10

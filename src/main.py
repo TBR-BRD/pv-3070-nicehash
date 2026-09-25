@@ -4,6 +4,7 @@ import threading
 import time
 from src.config import load_settings
 from src.pv.shelly import ShellyReader
+from src.pv.shelly_plug import ShellyPlugReader, ShellyPlugError
 from src.gpu.nvidia import NvidiaGPU
 from src.nicehash.manager import NiceHashManager
 from src.nicehash.cloud_api import NiceHashCloudClient, NiceHashCloudError, summarize_managed_rig
@@ -40,6 +41,24 @@ def _start_nicehash_cloud_poller(dashboard, worker_name, poll_interval, log):
 
     threading.Thread(target=loop, daemon=True, name="nicehash-cloud-poller").start()
 
+def _start_pc_power_poller(dashboard, shelly_ip, poll_interval, log):
+    """Polls a Shelly Plug S placed in front of the PC and reports its
+    measured power draw to the dashboard. Purely informational - not part of
+    the control loop, so a slow/failed read here never affects mining."""
+    reader = ShellyPlugReader(shelly_ip)
+
+    def loop():
+        while True:
+            try:
+                data = reader.read()
+                dashboard.update(pc_power=data, system={"pc_power_ok": True})
+            except ShellyPlugError as exc:
+                log.warning("PC power meter (Shelly Plug) unreachable: %s", exc)
+                dashboard.update(pc_power=None, system={"pc_power_ok": False})
+            time.sleep(poll_interval)
+
+    threading.Thread(target=loop, daemon=True, name="pc-power-poller").start()
+
 def main():
     s = load_settings()
     log = setup_logging(s.app["log_level"], s.logging["file"])
@@ -64,6 +83,15 @@ def main():
             dashboard,
             nicehash_cloud_cfg.get("worker_name"),
             int(nicehash_cloud_cfg.get("poll_interval_seconds", 60)),
+            log,
+        )
+
+    pc_power_cfg = s.data.get("pc_power_meter", {})
+    if dashboard and pc_power_cfg.get("enabled", False):
+        _start_pc_power_poller(
+            dashboard,
+            pc_power_cfg["shelly_ip"],
+            int(pc_power_cfg.get("poll_interval_seconds", 10)),
             log,
         )
 
