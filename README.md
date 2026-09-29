@@ -77,13 +77,9 @@ auto_shutdown:
 ```
 This runs `shutdown /s /t 60` (60s delay, cancellable with `shutdown /a` from an elevated prompt if it ever fires unexpectedly). It requires the same elevated permissions as `nvidia-smi --power-limit` - see "Windows Scheduled Task" below.
 
-To wake the PC again in the morning, set **Power On By RTC Alarm** in the BIOS/UEFI (as with the Ubuntu GPU miner). Windows additionally needs wake timers allowed for this to work from a full shutdown:
-```powershell
-powercfg /waketimers
-powercfg /setacvalueindex SCHEME_CURRENT SUB_SLEEP RTCWAKE 1
-powercfg /setactive SCHEME_CURRENT
-```
-Verify after a real wake-up with `powercfg -lastwake`.
+To wake the PC again in the morning, set **Power On By RTC Alarm** in the BIOS/UEFI (as with the Ubuntu GPU miner) to the desired time. This is a motherboard-level hardware wake from a fully powered-off state (S5) - equivalent to someone pressing the power button - and is independent of Windows' own power plan. No `powercfg` wake-timer configuration is needed or relevant here; that setting only governs Windows' own scheduled wake from *sleep* (S3), which doesn't apply to a full shutdown.
+
+Test it once with a wake time a few minutes out before relying on the real morning schedule, then set it back.
 
 ## Windows Scheduled Task
 
