@@ -64,7 +64,14 @@ dashboard:
   port: 8090
 ```
 
-Then open `http://127.0.0.1:8090/` (or `http://<pc-ip>:8090/` from another device on the network, once bound to `0.0.0.0` and the Windows Firewall allows the port). It shows PV surplus, GPU power/temperature/utilization, controller state, the NiceHash Miner process status, the active thresholds and a rolling event log - updated every 5 seconds via `/api/status`. It only ever shows values the controller itself measures; there is no separate NiceHash-account/hashrate data source wired in.
+Then open `http://127.0.0.1:8090/` locally, or `http://<pc-ip>:8090/` (e.g. `http://192.168.178.178:8090/`) from another device on the network. It shows PV surplus, GPU power/temperature/utilization, controller state, the NiceHash Miner process status, the active thresholds and a rolling event log - updated every 5 seconds via `/api/status`. It only ever shows values the controller itself measures; there is no separate NiceHash-account/hashrate data source wired in.
+
+**To reach it from another device**, two things are needed on top of `host: "0.0.0.0"`:
+1. **Windows Firewall rule** (elevated CMD/PowerShell):
+   ```cmd
+   netsh advfirewall firewall add rule name="PV-3070-Dashboard" dir=in action=allow protocol=TCP localport=8090
+   ```
+2. **Restart the controller** so it picks up the new `host` setting.
 
 ## Auto-shutdown overnight
 
