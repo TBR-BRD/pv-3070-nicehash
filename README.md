@@ -79,7 +79,11 @@ This runs `shutdown /s /t 60` (60s delay, cancellable with `shutdown /a` from an
 
 To wake the PC again in the morning, set **Power On By RTC Alarm** in the BIOS/UEFI (as with the Ubuntu GPU miner) to the desired time. This is a motherboard-level hardware wake from a fully powered-off state (S5) - equivalent to someone pressing the power button - and is independent of Windows' own power plan. No `powercfg` wake-timer configuration is needed or relevant here; that setting only governs Windows' own scheduled wake from *sleep* (S3), which doesn't apply to a full shutdown.
 
-Test it once with a wake time a few minutes out before relying on the real morning schedule, then set it back.
+Test it once with a wake time a few minutes out before relying on the real morning schedule, then set it back. Confirmed working (2026-09-29) on an ASUS ROG board:
+- UEFI BIOS Utility (Advanced Mode) -> **Erweitert -> APM-Konfiguration**
+- **Einschalten durch RTC**: Aktiviert
+- **RTC-Weckdatum (Tage)**: `0` (jeder Tag)
+- **Stunde / Minute / Sekunde**: `8 / 0 / 0` for an 08:00 daily wake
 
 ## Windows Scheduled Task
 
@@ -97,6 +101,7 @@ Set-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon' A
 Set-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon' DefaultUserName -Value $user
 Set-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon' DefaultPassword -Value $pass
 ```
+Not needed if the account already boots straight to the desktop without a password prompt (as on this setup) - Windows still fires a logon event in that case, which is enough for the `AtLogOn` trigger.
 
 ## Safety
 
