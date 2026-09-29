@@ -11,6 +11,7 @@ from src.nicehash.cloud_api import NiceHashCloudClient, NiceHashCloudError, summ
 from src.controller.pv_controller import PVController
 from src.monitoring.logger import setup_logging
 from src.monitoring.dashboard import DashboardState, start_dashboard_server
+from src.system.power import WindowsPower
 
 def _start_nicehash_cloud_poller(dashboard, worker_name, poll_interval, log):
     """Polls the NiceHash Platform REST API in the background (separate from
@@ -95,7 +96,13 @@ def main():
             log,
         )
 
-    controller = PVController(pv, gpu, nh, cfg, log, dashboard=dashboard)
+    shutdown_cfg = s.data.get("auto_shutdown", {})
+    cfg["auto_shutdown_enabled"] = shutdown_cfg.get("enabled", False)
+    cfg["auto_shutdown_idle_minutes"] = shutdown_cfg.get("idle_minutes", 30)
+    cfg["auto_shutdown_not_before_hour"] = shutdown_cfg.get("not_before_hour", 17)
+    power = WindowsPower() if shutdown_cfg.get("enabled", False) else None
+
+    controller = PVController(pv, gpu, nh, cfg, log, dashboard=dashboard, power=power)
     log.info("PV 3070 NiceHash controller started (dry_run=%s)", dry)
     try:
         while True:

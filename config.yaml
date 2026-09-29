@@ -49,3 +49,8 @@ pc_power_meter:
   enabled: false
   shelly_ip: "192.168.178.180"
   poll_interval_seconds: 10
+
+auto_shutdown:
+  enabled: false
+  idle_minutes: 30
+  not_before_hour: 17

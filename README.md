@@ -66,9 +66,41 @@ dashboard:
 
 Then open `http://127.0.0.1:8090/` (or `http://<pc-ip>:8090/` from another device on the network, once bound to `0.0.0.0` and the Windows Firewall allows the port). It shows PV surplus, GPU power/temperature/utilization, controller state, the NiceHash Miner process status, the active thresholds and a rolling event log - updated every 5 seconds via `/api/status`. It only ever shows values the controller itself measures; there is no separate NiceHash-account/hashrate data source wired in.
 
+## Auto-shutdown overnight
+
+The PC itself stays on all the time by default - the controller only pauses mining (stops NiceHash, drops the GPU to idle) when there's no surplus. To also shut the PC down after a longer stretch without surplus (mirroring the Ubuntu GPU miner's behavior), enable it in `config.yaml`:
+```yaml
+auto_shutdown:
+  enabled: true
+  idle_minutes: 30    # no usable surplus for this long...
+  not_before_hour: 17 # ...and only from this hour onward (avoids a midday cloud triggering it)
+```
+This runs `shutdown /s /t 60` (60s delay, cancellable with `shutdown /a` from an elevated prompt if it ever fires unexpectedly). It requires the same elevated permissions as `nvidia-smi --power-limit` - see "Windows Scheduled Task" below.
+
+To wake the PC again in the morning, set **Power On By RTC Alarm** in the BIOS/UEFI (as with the Ubuntu GPU miner). Windows additionally needs wake timers allowed for this to work from a full shutdown:
+```powershell
+powercfg /waketimers
+powercfg /setacvalueindex SCHEME_CURRENT SUB_SLEEP RTCWAKE 1
+powercfg /setactive SCHEME_CURRENT
+```
+Verify after a real wake-up with `powercfg -lastwake`.
+
 ## Windows Scheduled Task
 
 Run `scripts\install_task.ps1` from an elevated PowerShell after testing interactively. The task starts the controller at boot.
+
+**Important:** `nvidia-smi --power-limit` and (if enabled) `shutdown /s` both require administrator rights on Windows. `install_task.ps1` registers the task to run **at logon, as your own user, with highest privileges** rather than as SYSTEM - NiceHash Miner is a GUI app tied to your user profile (`C:\Users\<you>\AppData\Local\Programs\NiceHash Miner\...`) and doesn't work reliably under a SYSTEM session.
+
+This means the task only starts once you (or Windows) actually log this user in. If the PC also wakes unattended overnight via BIOS RTC (see above), enable **Windows auto-logon** so it doesn't just sit at the lock screen after waking:
+```powershell
+# Run as Administrator. Stores the password in the registry in plain text -
+# acceptable for a single-purpose mining box, not for a general-use PC.
+$user = $env:USERNAME
+$pass = Read-Host -AsSecureString "Password for $user" | ConvertFrom-SecureString -AsPlainText
+Set-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon' AutoAdminLogon -Value 1
+Set-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon' DefaultUserName -Value $user
+Set-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon' DefaultPassword -Value $pass
+```
 
 ## Safety
 

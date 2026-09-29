@@ -8,12 +8,14 @@ class PVController:
     STOPPING = "STOPPING"
     FAULT = "FAULT"
 
-    def __init__(self, pv, gpu, nicehash, cfg, logger, dashboard=None):
+    def __init__(self, pv, gpu, nicehash, cfg, logger, dashboard=None, power=None):
         self.pv, self.gpu, self.nicehash, self.cfg, self.log = pv, gpu, nicehash, cfg, logger
         self.dashboard = dashboard
+        self.power = power  # optional WindowsPower - enables auto-shutdown when set
         self.state = self.OFF
         self.above_since = None
         self.below_since = None
+        self.idle_since = None  # how long the OFF state has had no usable surplus
         self.errors = 0
         self.action_errors = 0  # consecutive failures of GPU/NiceHash actions,
                                  # tracked separately from input-read errors so
@@ -61,6 +63,27 @@ class PVController:
             if not dry_run: self._safe_stop()
             return True
         return False
+
+    def _check_auto_shutdown(self, now: float, dry_run: bool):
+        """Mirrors the Ubuntu GPU miner's idle-shutdown logic: if there's no
+        usable surplus for auto_shutdown_idle_minutes AND it's already past
+        auto_shutdown_not_before_hour (so a brief midday cloud doesn't trigger
+        it), shut the PC down. Only armed when self.power is set."""
+        if not (self.power and self.cfg.get("auto_shutdown_enabled")):
+            self.idle_since = None
+            return
+        self.idle_since = self.idle_since or now
+        idle_min = (now - self.idle_since) / 60.0
+        hour = time.localtime().tm_hour
+        if idle_min >= float(self.cfg["auto_shutdown_idle_minutes"]) and hour >= int(self.cfg["auto_shutdown_not_before_hour"]):
+            self.log.info("Kein Ueberschuss seit %.0f min (%d Uhr) -> Auto-Shutdown", idle_min, hour)
+            self._event("Auto-Shutdown ausgelöst (%.0f min ohne Überschuss)" % idle_min)
+            if not dry_run:
+                try:
+                    self.power.shutdown()
+                except Exception as exc:
+                    self.log.error("Shutdown fehlgeschlagen: %s", exc)
+            self.idle_since = None
 
     def _safe_stop(self):
         try:
@@ -140,6 +163,7 @@ class PVController:
         if self.state == self.OFF:
             self.below_since = None
             if surplus >= start_w:
+                self.idle_since = None
                 self.above_since = self.above_since or now
                 if now - self.above_since >= float(self.cfg["min_start_seconds"]):
                     target = self.target_power(surplus)
@@ -160,6 +184,7 @@ class PVController:
                         # instead of waiting min_start_seconds again
             else:
                 self.above_since = None
+                self._check_auto_shutdown(now, dry_run)
 
         elif self.state == self.MINING:
             self.above_since = None
