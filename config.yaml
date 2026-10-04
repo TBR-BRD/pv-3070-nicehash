@@ -16,7 +16,10 @@ pv:
   start_threshold_watts: -30
   stop_threshold_watts: -100
   min_start_seconds: 180
-  min_stop_seconds: 300
+  # 20 min: a brief deficit (a cloud, the EV charger cycling) shouldn't stop
+  # mining - up to ~100W of grid import during that window is an accepted
+  # cost of not flapping start/stop every few minutes.
+  min_stop_seconds: 1200
   invert_power_sign: false
   request_timeout_seconds: 5
   # Exponential-moving-average time constant (seconds) applied to the raw
