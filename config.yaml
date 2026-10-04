@@ -8,8 +8,13 @@ application:
 pv:
   shelly_ip: "192.168.1.50"
   reserve_watts: 40
-  start_threshold_watts: 180
-  stop_threshold_watts: 110
+  # Winter operation: PV surplus alone rarely reaches the old 180W/110W
+  # thresholds, so these allow mining to run on a mix of surplus and grid
+  # power - up to 100W pulled from the grid before stopping (negative
+  # values are grid import, positive are export, same sign convention as
+  # the read-back surplus value itself).
+  start_threshold_watts: -30
+  stop_threshold_watts: -100
   min_start_seconds: 180
   min_stop_seconds: 300
   invert_power_sign: false
@@ -61,6 +66,10 @@ pc_power_meter:
   poll_interval_seconds: 10
 
 auto_shutdown:
-  enabled: false
+  enabled: true
   idle_minutes: 30
   not_before_hour: 17
+  # Hard deadline, independent of the idle check above: the PC is shut down
+  # at this hour no matter what (even mid-MINING) - winter days end early
+  # and the PC shouldn't still be mining/awake into the evening.
+  hard_deadline_hour: 19

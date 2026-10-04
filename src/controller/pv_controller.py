@@ -18,6 +18,7 @@ class PVController:
         self.below_since = None
         self.idle_since = None  # how long the OFF state has had no usable surplus
         self.shutdown_triggered = False  # armed once per idle episode, see _check_auto_shutdown
+        self.hard_deadline_triggered = False  # armed once per day, see _check_hard_deadline_shutdown
         self.errors = 0
         self.action_errors = 0  # consecutive failures of GPU/NiceHash actions,
                                  # tracked separately from input-read errors so
@@ -126,6 +127,39 @@ class PVController:
                 except Exception as exc:
                     self.log.error("Shutdown fehlgeschlagen: %s", exc)
 
+    def _check_hard_deadline_shutdown(self, dry_run: bool) -> bool:
+        """Unconditional shutdown deadline, independent of the idle-based
+        check above: once this hour is reached, the PC goes down no matter
+        what - even mid-MINING - since winter days end early and the PC
+        shouldn't still be running into the evening. Returns True if it just
+        triggered (caller should stop processing this tick further).
+
+        Resets itself automatically once the hour drops back below the
+        deadline (i.e. after midnight), no explicit day-tracking needed."""
+        if not (self.power and self.cfg.get("auto_shutdown_enabled")):
+            self.hard_deadline_triggered = False
+            return False
+        deadline_hour = self.cfg.get("auto_shutdown_hard_deadline_hour")
+        if deadline_hour is None:
+            return False
+        hour = time.localtime().tm_hour
+        if hour < int(deadline_hour):
+            self.hard_deadline_triggered = False
+            return False
+        if self.hard_deadline_triggered:
+            return False
+        self.log.info("Harte Abschaltzeit erreicht (%d Uhr) -> Auto-Shutdown", int(deadline_hour))
+        self._event("Harte Abschaltzeit erreicht (%d Uhr) – Auto-Shutdown" % int(deadline_hour))
+        self.hard_deadline_triggered = True
+        if not dry_run:
+            if self.state == self.MINING:
+                self._safe_stop()
+            try:
+                self.power.shutdown()
+            except Exception as exc:
+                self.log.error("Shutdown fehlgeschlagen: %s", exc)
+        return True
+
     def _safe_stop(self):
         try:
             self.gpu.set_power_limit(int(self.cfg["safe_power_watts"]))
@@ -205,6 +239,9 @@ class PVController:
             return
         if gpu["temperature_c"] >= float(self.cfg["temperature_warning_c"]):
             self.log.warning("GPU temperature high: %.1f C", gpu["temperature_c"])
+
+        if self._check_hard_deadline_shutdown(dry_run):
+            return
 
         start_w = float(self.cfg["start_threshold_watts"])
         stop_w = float(self.cfg["stop_threshold_watts"])
