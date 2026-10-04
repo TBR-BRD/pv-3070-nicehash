@@ -67,6 +67,13 @@ pc_power_meter:
 
 auto_shutdown:
   enabled: true
+  # Off by default: shutting the whole PC down just because there's no
+  # usable surplus right now means a temporary big grid draw elsewhere in
+  # the house (an EV charging at several kW, say) can look identical to
+  # "no surplus for idle_minutes" and take the PC down for the rest of the
+  # day - only the hard_deadline_hour below then still applies. Turn this
+  # back on (true) for the old behavior of shutting down early on a quiet day.
+  idle_shutdown_enabled: false
   idle_minutes: 30
   not_before_hour: 17
   # Hard deadline, independent of the idle check above: the PC is shut down

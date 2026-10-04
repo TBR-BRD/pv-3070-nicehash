@@ -101,6 +101,7 @@ def main():
     cfg["auto_shutdown_idle_minutes"] = shutdown_cfg.get("idle_minutes", 30)
     cfg["auto_shutdown_not_before_hour"] = shutdown_cfg.get("not_before_hour", 17)
     cfg["auto_shutdown_hard_deadline_hour"] = shutdown_cfg.get("hard_deadline_hour")
+    cfg["auto_shutdown_idle_enabled"] = shutdown_cfg.get("idle_shutdown_enabled", True)
     power = WindowsPower() if shutdown_cfg.get("enabled", False) else None
 
     controller = PVController(pv, gpu, nh, cfg, log, dashboard=dashboard, power=power)

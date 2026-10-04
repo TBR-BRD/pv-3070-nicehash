@@ -107,8 +107,18 @@ class PVController:
         shutdown_triggered fires this at most once per idle episode: Windows'
         `shutdown /s` (re-)starts a fresh countdown on every call, so calling
         it again every tick while still idle would keep pushing the actual
-        shutdown back forever instead of ever completing it."""
-        if not (self.power and self.cfg.get("auto_shutdown_enabled")):
+        shutdown back forever instead of ever completing it.
+
+        Separately gated from the hard deadline below via
+        auto_shutdown_idle_enabled: a large but temporary grid draw (an EV
+        charging at several kW, say) looks identical to "no usable surplus"
+        here, and shutting the whole PC down over that means nothing can
+        bring it back once the draw ends - only a full day's wait for a
+        scheduled BIOS wake would recover it. Turning this sub-feature off
+        keeps the PC up (and able to resume mining the moment surplus/import
+        allows it again) while the hard deadline below still guarantees a
+        shutdown by a fixed hour regardless."""
+        if not (self.power and self.cfg.get("auto_shutdown_enabled") and self.cfg.get("auto_shutdown_idle_enabled", True)):
             self.idle_since = None
             self.shutdown_triggered = False
             return
