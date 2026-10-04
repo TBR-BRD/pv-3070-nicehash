@@ -43,8 +43,28 @@ class NiceHashManager:
             time.sleep(1)
         return self.is_running()
 
-    def _terminate_all(self, name: str):
+    def _find_with_children(self, name: str):
+        # NiceHash Miner launches the actual hashing work in a separate
+        # per-algorithm child executable (e.g. gminer.exe, t-rex.exe,
+        # excavator.exe - whichever it picked for the GPU) rather than
+        # hashing in-process. Killing only the named launcher/app process by
+        # name left that child running as an orphan, still loading the GPU,
+        # while is_running() correctly reported the named process gone -
+        # exactly the bug that showed up as ~170W idle draw with the
+        # dashboard saying NiceHash was stopped. Collecting descendants
+        # *before* terminating anything (a dead process has no children to
+        # query) closes that gap regardless of which backend it spawned.
         procs = self._find(name)
+        all_procs = list(procs)
+        for p in procs:
+            try:
+                all_procs.extend(p.children(recursive=True))
+            except (psutil.NoSuchProcess, psutil.AccessDenied):
+                pass
+        return all_procs
+
+    def _terminate_all(self, name: str):
+        procs = self._find_with_children(name)
         for p in procs:
             try:
                 p.terminate()
