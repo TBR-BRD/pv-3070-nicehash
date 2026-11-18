@@ -2,6 +2,12 @@
 
 Automatic PV-surplus control for one NVIDIA RTX 3070 running NiceHash Miner on Windows 10/11.
 
+<br>
+<a href="https://www.buymeacoffee.com/thoralf.brandt" target="_blank">
+  <img src="https://cdn.buymeacoffee.com/buttons/default-orange.png" alt="Buy Me A Coffee" height="41" width="174">
+</a>
+<br>
+
 ## Architecture
 
 - **Shelly Pro 3EM**: supplies current PV/grid power information.
